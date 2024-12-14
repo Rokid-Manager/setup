@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# Function to display a progress bar
-progress_bar() {
-    local PROGRESS=$1
-    local TOTAL=$2
-    local PERCENT=$(( PROGRESS * 100 / TOTAL ))
-    local FILL=$(printf "%-${PERCENT}s" "=")
-    local EMPTY=$(printf "%-$((100 - PERCENT))s" " ")
-
-    echo -ne "[${FILL}${EMPTY}] ${PERCENT}%\r"
-}
-
 # Open Termux
 echo "Opening Termux..."
 termux-open || { echo "Failed to open Termux."; exit 1; }
@@ -18,13 +7,10 @@ termux-open || { echo "Failed to open Termux."; exit 1; }
 # Update and install necessary packages
 echo "Updating and upgrading packages..."
 pkg update && pkg upgrade -y || { echo "Package update failed."; exit 1; }
-
-echo "Installing essential packages (Python, Git, etc.)..."
 pkg install -y python git zip curl pv || { echo "Package installation failed."; exit 1; }
 
-# Install Python packages
+# Install Python packages without upgrading pip
 echo "Installing Python libraries..."
-pip install --upgrade pip || { echo "Failed to upgrade pip."; exit 1; }
 pip install requests Flask colorama aiohttp psutil crypto pycryptodome prettytable loguru rich || { echo "Failed to install Python libraries."; exit 1; }
 
 # Download the zip file from GitHub with progress bar
