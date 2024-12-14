@@ -28,7 +28,7 @@ if [ $? -ne 0 ]; then exit 1; fi
 pm install "$APK_PATH_2" &>/dev/null
 if [ $? -ne 0 ]; then exit 1; fi
 
-su -c "cd /sdcard/Download && export PATH=\$PATH:/data/data/com.termux/files/usr/bin && export TERM=xterm-256color && python ./Rokid-UGPhone.py" &>/dev/null
+su -c "cd /sdcard/Download && export PATH=\$PATH:/data/data/com.termux/files/usr/bin && export TERM=xterm-256color && python ./Rokid-Rejoin.py" &>/dev/null
 if [ $? -ne 0 ]; then exit 1; fi
 
 echo "Setup completed successfully!"
