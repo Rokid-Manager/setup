@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Function to display a progress bar
+progress_bar() {
+    local PROGRESS=$1
+    local TOTAL=$2
+    local PERCENT=$(( PROGRESS * 100 / TOTAL ))
+    local FILL=$(printf "%-${PERCENT}s" "=")
+    local EMPTY=$(printf "%-$((100 - PERCENT))s" " ")
+
+    echo -ne "[${FILL}${EMPTY}] ${PERCENT}%\r"
+}
+
 # Open Termux
 echo "Opening Termux..."
 termux-open || { echo "Failed to open Termux."; exit 1; }
@@ -7,32 +18,38 @@ termux-open || { echo "Failed to open Termux."; exit 1; }
 # Update and install necessary packages
 echo "Updating and upgrading packages..."
 pkg update && pkg upgrade -y || { echo "Package update failed."; exit 1; }
-pkg install -y python git zip curl pv || { echo "Package installation failed."; exit 1; }
+pkg install -y curl pv || { echo "Package installation failed."; exit 1; }
 
-# Install Python packages without upgrading pip
-echo "Installing Python libraries..."
-pip install requests Flask colorama aiohttp psutil crypto pycryptodome prettytable loguru rich || { echo "Failed to install Python libraries."; exit 1; }
+# Menu for choosing the APK to download
+echo "What do you want to download?"
+echo "1. Codex"
+echo "2. DeltaX"
+echo "3. ArceusX"
+read -p "Enter your choice (1/2/3): " choice
 
-# Download the zip file from GitHub with progress bar
-echo "Downloading the ZIP file from GitHub..."
-curl -L https://codeload.github.com/Rokid-Manager/RokidManager_DeltaX/zip/refs/heads/main -o RokidManager_DeltaX.zip | pv -s $(curl -sI https://codeload.github.com/Rokid-Manager/RokidManager_DeltaX/zip/refs/heads/main | grep -i Content-Length | awk '{print $2}' | tr -d '\r') > /dev/null || { echo "Failed to download zip file."; exit 1; }
+# Custom raw links for each APK
+case $choice in
+    1)
+        RAW_LINK="https://example.com/raw/codex.apk"  # Replace with the raw link for Codex APK
+        ;;
+    2)
+        RAW_LINK="https://media.githubusercontent.com/media/Rokid-Manager/RokidManager_DeltaX/refs/heads/main/Delta-2.652.765.apk"  # Replace with the raw link for DeltaX APK
+        ;;
+    3)
+        RAW_LINK="https://example.com/raw/arceusx.apk"  # Replace with the raw link for ArceusX APK
+        ;;
+    *)
+        echo "Invalid choice. Exiting."
+        exit 1
+        ;;
+esac
 
-# Extract the downloaded zip with progress bar
-echo "Extracting the ZIP file..."
-unzip -q RokidManager_DeltaX.zip | pv -s $(du -sb RokidManager_DeltaX.zip | awk '{print $1}') > /dev/null || { echo "Failed to extract the zip file."; exit 1; }
+# Download the APK file with progress
+echo "Downloading the APK file..."
+curl -L "$RAW_LINK" -o selected_apk.apk | pv -s $(curl -sI "$RAW_LINK" | grep -i Content-Length | awk '{print $2}' | tr -d '\r') > /dev/null || { echo "Failed to download the APK file."; exit 1; }
 
-# Navigate to the extracted folder
-cd RokidManager_DeltaX-main || { echo "Failed to navigate to the extracted folder."; exit 1; }
-
-# Find the APK file in the extracted folder (assuming only one APK)
-APK_PATH=$(find . -type f -name "*.apk" | head -n 1)
-if [ -n "$APK_PATH" ]; then
-    echo "Found APK file: $APK_PATH"
-    echo "Installing APK..."
-    termux-open "$APK_PATH" || { echo "Failed to install APK."; exit 1; }
-else
-    echo "APK file not found in the extracted folder."
-    exit 1
-fi
+# Install the APK
+echo "Installing the APK..."
+termux-open selected_apk.apk || { echo "Failed to install the APK."; exit 1; }
 
 echo "Setup complete!"
