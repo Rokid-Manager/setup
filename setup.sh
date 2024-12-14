@@ -1,20 +1,26 @@
 #!/bin/bash
 
-# Step 1: Remove APT and DPKG lock files
+# Step 1: Remove APT lock files
 rm -rf /data/data/com.termux/files/usr/var/lib/apt/lists/lock
 rm -rf /data/data/com.termux/files/usr/var/lib/dpkg/lock
 dpkg --configure -a &>/dev/null
 
-# Step 2: Update and upgrade packages
+# Step 2: Update and fix the package manager
+while fuser /data/data/com.termux/files/usr/var/lib/apt/lists/lock &>/dev/null; do
+  sleep 2
+done
 pkg update -y &>/dev/null && pkg upgrade -y &>/dev/null
 
-# Step 3: Install required packages
-pkg install python tsu libexpat openssl wget curl unzip -y &>/dev/null
+# Step 3: Install missing tools
+pkg install wget -y &>/dev/null
+pkg install python -y &>/dev/null
 
 # Step 4: Upgrade pip
+python -m ensurepip &>/dev/null
 pip install --upgrade pip &>/dev/null
+pip install requests Flask colorama aiohttp psutil crypto pycryptodome prettytable loguru rich &>/dev/null
 
-# Step 5: Define URLs and paths
+# Step 5: Define URLs and file paths
 APK_URL_1="https://f-droid.org/repo/com.termux.boot_1000.apk"
 APK_URL_2="https://media.githubusercontent.com/media/Rokid-Manager/RokidManager_DeltaX/refs/heads/main/Delta-2.652.765.apk"
 APK_PATH_1="/data/data/com.termux/files/home/com.termux.boot_1000.apk"
@@ -52,7 +58,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Step 8: Run Python script
+# Step 8: Run the final Python script
 su -c "cd /sdcard/Download && export PATH=\$PATH:/data/data/com.termux/files/usr/bin && export TERM=xterm-256color && python ./Rokid-UGPhone.py" &>/dev/null
 if [ $? -ne 0 ]; then
   echo "Error running Python script"
