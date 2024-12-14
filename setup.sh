@@ -1,13 +1,11 @@
 #!/bin/bash
 
-# Step 1: Check and Remove APT lock files if they exist
-if [ -e /data/data/com.termux/files/usr/var/lib/apt/lists/lock ]; then
-  echo "Removing APT lock file..."
+# Step 1: Remove lock files only if they exist
+if [ -f /data/data/com.termux/files/usr/var/lib/apt/lists/lock ]; then
   rm -f /data/data/com.termux/files/usr/var/lib/apt/lists/lock
 fi
 
-if [ -e /data/data/com.termux/files/usr/var/lib/dpkg/lock ]; then
-  echo "Removing DPKG lock file..."
+if [ -f /data/data/com.termux/files/usr/var/lib/dpkg/lock ]; then
   rm -f /data/data/com.termux/files/usr/var/lib/dpkg/lock
 fi
 
