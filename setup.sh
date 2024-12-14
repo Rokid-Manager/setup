@@ -1,17 +1,20 @@
 #!/bin/bash
 
-# Step 1: Remove APT lock files
-rm -rf /data/data/com.termux/files/usr/var/lib/apt/lists/lock
-rm -rf /data/data/com.termux/files/usr/var/lib/dpkg/lock
+# Step 1: Remove APT lock files if they exist
+if [ -f /data/data/com.termux/files/usr/var/lib/apt/lists/lock ]; then
+  rm -rf /data/data/com.termux/files/usr/var/lib/apt/lists/lock
+fi
+
+if [ -f /data/data/com.termux/files/usr/var/lib/dpkg/lock ]; then
+  rm -rf /data/data/com.termux/files/usr/var/lib/dpkg/lock
+fi
+
 dpkg --configure -a &>/dev/null
 
-# Step 2: Update and fix the package manager
-while fuser /data/data/com.termux/files/usr/var/lib/apt/lists/lock &>/dev/null; do
-  sleep 2
-done
+# Step 2: Update and upgrade packages
 pkg update -y &>/dev/null && pkg upgrade -y &>/dev/null
 
-# Step 3: Install missing tools
+# Step 3: Install required tools
 pkg install wget -y &>/dev/null
 pkg install python -y &>/dev/null
 
