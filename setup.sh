@@ -1,71 +1,52 @@
 #!/bin/bash
 
-# Step 1: Remove lock files only if they exist
-if [ -f /data/data/com.termux/files/usr/var/lib/apt/lists/lock ]; then
-  rm -f /data/data/com.termux/files/usr/var/lib/apt/lists/lock
-fi
+# Function to display a progress bar
+progress_bar() {
+    local PROGRESS=$1
+    local TOTAL=$2
+    local PERCENT=$(( PROGRESS * 100 / TOTAL ))
+    local FILL=$(printf "%-${PERCENT}s" "=")
+    local EMPTY=$(printf "%-$((100 - PERCENT))s" " ")
 
-if [ -f /data/data/com.termux/files/usr/var/lib/dpkg/lock ]; then
-  rm -f /data/data/com.termux/files/usr/var/lib/dpkg/lock
-fi
-
-dpkg --configure -a &>/dev/null
-
-# Step 2: Update and upgrade packages
-pkg update -y &>/dev/null && pkg upgrade -y &>/dev/null
-
-# Step 3: Install required tools
-pkg install wget -y &>/dev/null
-pkg install python -y &>/dev/null
-
-# Step 4: Upgrade pip
-python -m ensurepip &>/dev/null
-pip install --upgrade pip &>/dev/null
-pip install requests Flask colorama aiohttp psutil crypto pycryptodome prettytable loguru rich &>/dev/null
-
-# Step 5: Define URLs and file paths
-APK_URL_1="https://f-droid.org/repo/com.termux.boot_1000.apk"
-APK_URL_2="https://media.githubusercontent.com/media/Rokid-Manager/RokidManager_DeltaX/refs/heads/main/Delta-2.652.765.apk"
-APK_PATH_1="/data/data/com.termux/files/home/com.termux.boot_1000.apk"
-APK_PATH_2="/data/data/com.termux/files/home/Delta-2.652.765.apk"
-
-# Step 6: Download files with progress bar
-download_with_progress() {
-  local url="$1"
-  local output_path="$2"
-  wget --quiet --show-progress "$url" -O "$output_path"
+    echo -ne "[${FILL}${EMPTY}] ${PERCENT}%\r"
 }
 
-download_with_progress "$APK_URL_1" "$APK_PATH_1"
-if [ $? -ne 0 ]; then
-  echo "Error downloading Termux Boot APK"
-  exit 1
+# Open Termux
+echo "Opening Termux..."
+termux-open || { echo "Failed to open Termux."; exit 1; }
+
+# Update and install necessary packages
+echo "Updating and upgrading packages..."
+pkg update && pkg upgrade -y || { echo "Package update failed."; exit 1; }
+
+echo "Installing essential packages (Python, Git, etc.)..."
+pkg install -y python git zip curl pv || { echo "Package installation failed."; exit 1; }
+
+# Install Python packages
+echo "Installing Python libraries..."
+pip install --upgrade pip || { echo "Failed to upgrade pip."; exit 1; }
+pip install requests Flask colorama aiohttp psutil crypto pycryptodome prettytable loguru rich || { echo "Failed to install Python libraries."; exit 1; }
+
+# Download the zip file from GitHub with progress bar
+echo "Downloading the ZIP file from GitHub..."
+curl -L https://codeload.github.com/Rokid-Manager/RokidManager_DeltaX/zip/refs/heads/main -o RokidManager_DeltaX.zip | pv -s $(curl -sI https://codeload.github.com/Rokid-Manager/RokidManager_DeltaX/zip/refs/heads/main | grep -i Content-Length | awk '{print $2}' | tr -d '\r') > /dev/null || { echo "Failed to download zip file."; exit 1; }
+
+# Extract the downloaded zip with progress bar
+echo "Extracting the ZIP file..."
+unzip -q RokidManager_DeltaX.zip | pv -s $(du -sb RokidManager_DeltaX.zip | awk '{print $1}') > /dev/null || { echo "Failed to extract the zip file."; exit 1; }
+
+# Navigate to the extracted folder
+cd RokidManager_DeltaX-main || { echo "Failed to navigate to the extracted folder."; exit 1; }
+
+# Find the APK file in the extracted folder (assuming only one APK)
+APK_PATH=$(find . -type f -name "*.apk" | head -n 1)
+if [ -n "$APK_PATH" ]; then
+    echo "Found APK file: $APK_PATH"
+    echo "Installing APK..."
+    termux-open "$APK_PATH" || { echo "Failed to install APK."; exit 1; }
+else
+    echo "APK file not found in the extracted folder."
+    exit 1
 fi
 
-download_with_progress "$APK_URL_2" "$APK_PATH_2"
-if [ $? -ne 0 ]; then
-  echo "Error downloading GitHub APK"
-  exit 1
-fi
-
-# Step 7: Install APKs
-pm install "$APK_PATH_1" &>/dev/null
-if [ $? -ne 0 ]; then
-  echo "Error installing Termux Boot APK"
-  exit 1
-fi
-
-pm install "$APK_PATH_2" &>/dev/null
-if [ $? -ne 0 ]; then
-  echo "Error installing GitHub APK"
-  exit 1
-fi
-
-# Step 8: Run the final Python script
-su -c "cd /sdcard/Download && export PATH=\$PATH:/data/data/com.termux/files/usr/bin && export TERM=xterm-256color && python ./Rokid-UGPhone.py" &>/dev/null
-if [ $? -ne 0 ]; then
-  echo "Error running Python script"
-  exit 1
-fi
-
-echo "Setup completed successfully!"
+echo "Setup complete!"
