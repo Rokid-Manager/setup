@@ -44,7 +44,7 @@ echo "4. Cryptic"
 echo "5. Trigon"
 echo "6. CodeX VNG"
 echo "7. ArceusX VNG"
-read -p "Enter your choice (1/2/3): " choice
+read -p "Enter your choice (1-7): " choice
 
 case "$choice" in
     "1")
