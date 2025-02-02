@@ -7,8 +7,6 @@ pip install requests Flask colorama aiohttp psutil crypto pycryptodome prettytab
 
 BOOT_APK_LINK="https://f-droid.org/repo/com.termux.boot_7.apk"
 BOOT_APK_NAME="TermuxBoot.apk"
-TERMUX_APK_LINK="https://f-droid.org/repo/com.termux_1020.apk"
-TERMUX_APK_NAME="Termux.apk"
 FLOATINGAPP_APK_LINK="https://download2285.mediafire.com/1u2gii0jgrhglV_EOBf55vLer4Ilxj6Mqi5D1pess_sMzaJryZ6zA8mYslCH5MoBvctKgMnrerJ1YXSghKl50CxCCNPdWs-NeVmvXZJo75TE9rAzMPsbY3AwTzllTjR599Kd4B8vsLG2VLVuR5YKe4boakVrQUChgU8iCknYzJyI/7s4z33q4cklyf3m/com-mod-floating-apps-apk-mod-4-14-premium-141402012.apk"
 FLOATINGAPP_APK_NAME="FloatingApp.apk"
 UGCLONER_APK_LINK="https://download2337.mediafire.com/nkhpp9xm1hmgIz6bm57HuRbSltnldQbMRRW1T-XXN5UtaqZAmCkWpGRPNLD7RLzZtEb_VGQ20UpJcJ224EhtR4Z0gUUvES3Gfy71fFajo6f5Xg3X2IsUhusTKmAdrHvDA3WCIcpgFj4lOhA461JzRmfobVvSu6yYSqrEq7xpP9H8/juhzfoeptq56if2/UG_Cloner.apk"
@@ -21,14 +19,6 @@ if [ ! -f "$BOOT_APK_NAME" ]; then
     exit 1
 fi
 termux-open "$BOOT_APK_NAME" || exit 1
-
-echo "Installing Termux..."
-curl -L "$TERMUX_APK_LINK" -o "$TERMUX_APK_NAME" || exit 1
-if [ ! -f "$TERMUX_APK_NAME" ]; then
-    echo "Failed to download Termux."
-    exit 1
-fi
-termux-open "$TERMUX_APK_NAME" || exit 1
 
 echo "Installing Floating App..."
 curl -L "$FLOATINGAPP_APK_LINK" -o "$FLOATINGAPP_APK_NAME" || exit 1
